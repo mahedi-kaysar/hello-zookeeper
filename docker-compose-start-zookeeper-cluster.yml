@@ -1,0 +1,51 @@
+version: '3.4'
+services:
+  zookeeper1:
+    container_name: zookeeper1
+    hostname: "zookeeper1"
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - 2181:2181
+    networks:
+      - zookeeper_net
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOO_SERVER_ID=1
+      - ZOO_SERVERS=0.0.0.0:2888:3888,zookeeper2:2888:3888,zookeeper3:2888:3888
+      - ZOO_LOG_LEVEL=DEBUG
+  zookeeper2:
+    container_name: zookeeper2
+    hostname: "zookeeper2"
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - 2182:2181
+    networks:
+      - zookeeper_net
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOO_SERVER_ID=2
+      - ZOO_SERVERS=zookeeper1:2888:3888,0.0.0.0:2888:3888,zookeeper3:2888:3888
+      - ZOO_LOG_LEVEL=DEBUG
+
+  zookeeper3:
+    container_name: zookeeper3
+    hostname: "zookeeper3"
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - 2183:2181
+    networks:
+      - zookeeper_net
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOO_SERVER_ID=3
+      - ZOO_SERVERS=zookeeper1:2888:3888,zookeeper2:2888:3888,0.0.0.0:2888:3888
+      - ZOO_LOG_LEVEL=DEBUG
+
+networks:
+  zookeeper_net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
