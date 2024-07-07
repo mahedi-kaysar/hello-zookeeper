@@ -56,3 +56,10 @@ Leader Election Process includes:
 
 # Output snapshot:
 
+## Nodes running
+![alt text](docs/nodes-running.png)
+
+## Logs of the application
+![alt text](docs/output-app-logs.png)
+
+From the logs we can see only node number printed the expected message ("We are started!")
