@@ -60,7 +60,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>com.zookeeper.example.HelloZookeeper</mainClass>
+              <mainClass>com.zookeeper.example.App</mainClass>
             </manifest>
           </archive>
         </configuration>
