@@ -1,7 +1,10 @@
 package com.zookeeper.example;
 
+/**
+ * This is the zookeeper client config class.
+ */
 public class ZookeeperClientConfig {
-    private int timeout = 3000;
+    private int timeout = 5000;
     private int maxRetry = 3;
     private int retryDelay = 2000;
     private String connectionString = "localhost:2181";

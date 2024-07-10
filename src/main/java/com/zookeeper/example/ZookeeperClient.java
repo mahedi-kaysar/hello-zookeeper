@@ -1,34 +1,38 @@
 package com.zookeeper.example;
 
+import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 public class ZookeeperClient {
     private ZooKeeper zooKeeper;
     ZookeeperClientConfig zookeeperClientConfig;
+    CountDownLatch connectionLatch = new CountDownLatch(1);
     public ZookeeperClient(ZookeeperClientConfig zookeeperClientConfig) throws IOException, InterruptedException {
         this.zookeeperClientConfig = zookeeperClientConfig;
         initialise();
     }
 
+
+    /**
+     * this is to initialise connection.
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void initialise() throws IOException, InterruptedException {
-        int countRetry = 0;
-        while (true) {
-            try {
-                this.zooKeeper = new ZooKeeper(zookeeperClientConfig.getConnectionString(),
-                        zookeeperClientConfig.getTimeout(), null);
-                break;
-            } catch (IOException e) {
-                if (countRetry++ == zookeeperClientConfig.getMaxRetry()) {
-                    System.out.println("Maximum retries reached");
-                    throw e;
+
+        this.zooKeeper = new ZooKeeper(zookeeperClientConfig.getConnectionString(),
+            zookeeperClientConfig.getTimeout(), watchedEvent -> {
+                if (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) {
+                    System.out.println("Connected");
+                    connectionLatch.countDown();
                 }
-                System.out.println("Failed to connect to ZooKeeper, retrying in " + zookeeperClientConfig.getRetryDelay() + "ms...");
-                Thread.sleep(zookeeperClientConfig.getRetryDelay());
-            }
-        }
+        });
+        connectionLatch.await();
     }
 
     public void closeConnection() throws InterruptedException {
@@ -39,7 +43,4 @@ public class ZookeeperClient {
         return zooKeeper;
     }
 
-    public void setZooKeeper(ZooKeeper zooKeeper) {
-        this.zooKeeper = zooKeeper;
-    }
 }

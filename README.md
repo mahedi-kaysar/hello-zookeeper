@@ -18,41 +18,36 @@ Therefore - each nodes need to know if the message is already printed by another
 # Solution
 This above problem can be solved using Apache Zookeeper which is an opensource co-ordination service and
 widely used highly scalable configuration management, co-ordinating services, handling race-condition, distributed 
-locking, deadlock prevention, leader election in a distributed environment. 
+locking, deadlock prevention, leader selection in a distributed environment. 
 
-We will use leader election service of apache zookeeper to solve the problem.
+We will use leader selection approach of apache zookeeper to solve the problem.
+Steps are:
 
-## Leader Election
-
-Leader election is a critical aspect of distributed systems, ensuring that tasks are managed efficiently by designating 
-one node as the leader. ZooKeeper, with its robust coordination capabilities, simplifies this process. 
-By using ZooKeeper’s atomic broadcast protocol, ZAB (ZooKeeper Atomic Broadcast), distributed systems can elect a 
-leader reliably and efficiently. The use of ephemeral and sequential nodes in ZooKeeper provides an effective mechanism
-for leader election, ensuring that the system remains consistent and fault-tolerant even when nodes fail or network partitions occur. 
-Leader Election Process includes:
-
-- Ephemeral Sequential Nodes: Each participating node creates an ephemeral sequential node in ZooKeeper. These nodes are temporary and are automatically deleted when the session ends.
-- Nodes create their ephemeral sequential nodes in a designated ZooKeeper path. This ensures each node has a unique identifier.
-- Detecting the Leader: The node with the smallest sequence number is elected as the leader. If this node fails, the next node in line becomes the leader.
-- Node Deletion: When a node is deleted, the nodes that were watching it are notified. These nodes then check if they are the new leader.
-- Rechecking Leadership: Nodes recheck their status when the watched node is deleted. This ensures that the leader role is always occupied.
+- Start Zookeeper Cluster
+- create a persistent parent node (/parent) in the cluster. The parent node ensures that the starting point which is always
+  available even all the ephemeral nodes got deleted
+- create a non-persistent child node(/parent/n_<sequence_number>) also known as ephemeral sequential in apache zookeeper.
+- find the node of lowest sequence number from the all active children of the parent node (/parent/*).
+- The node with the lowest sequence number will print ("We are started!").
 
 # Tools and library used
-- maven (3.9.9) for dependency management
+- maven (3.9.8) for dependency management
 - java 8
 - Apache Zookeeper client library
 - docker and docker-compose to startup zookeeper cluster and run the multiple instance of application.
 
 # Build
-- mvn clean package
+- ./build.sh
 
 # Run Simulation - 3 node apache zookeeper and 3 process of the java application
 
-- ./start-simulation.sh 
-- ./stop-simulation.sh # for stopping the java application
+- ./start-zookeeper.sh
+- ./start-app.sh
+- ./stop-app.sh # for stopping the java application
+- ./stop-zookeeper.sh # for stopping the cluster
 
 ## Notes:
-- we have used Thread.sleep(Long.MAX_VALUE) and logged current node names to simulate the work - which was not mentioned in the requirement. 
+- we have used Thread.sleep(<Milisec>) and logged current node names to simulate the work - which was not mentioned in the requirement. 
 
 # Output snapshot:
 
@@ -62,4 +57,4 @@ Leader Election Process includes:
 ## Logs of the application
 ![alt text](docs/output-app-logs.png)
 
-From the logs we can see only node number printed the expected message ("We are started!")
+From the logs we can see only 1 node printed the expected message ("We are started!")

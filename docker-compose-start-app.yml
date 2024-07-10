@@ -3,17 +3,17 @@ services:
   hello-zookeeper1:
     container_name: hello-zookeeper1
     image: hello-zookeeper:1.0.0
-    command: ["java", "-jar", "hello-zookeeper-client.jar", "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"]
+    command: ["java", "-jar", "hello-zookeeper-client.jar", "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181", "10000000"]
 
   hello-zookeeper2:
     container_name: hello-zookeeper2
     image: hello-zookeeper:1.0.0
-    command: ["java", "-jar", "hello-zookeeper-client.jar", "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"]
+    command: ["java", "-jar", "hello-zookeeper-client.jar", "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181", "10000000"]
 
   hello-zookeeper3:
     container_name: hello-zookeeper3
     image: hello-zookeeper:1.0.0
-    command: ["java", "-jar", "hello-zookeeper-client.jar", "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"]
+    command: ["java", "-jar", "hello-zookeeper-client.jar", "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181", "10000000"]
 
 networks:
   default:
