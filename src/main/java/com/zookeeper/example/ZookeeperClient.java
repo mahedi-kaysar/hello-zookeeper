@@ -6,6 +6,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class ZookeeperClient {
     private ZooKeeper zooKeeper;
@@ -32,7 +33,7 @@ public class ZookeeperClient {
                     connectionLatch.countDown();
                 }
         });
-        connectionLatch.await();
+        connectionLatch.await(5000, TimeUnit.MILLISECONDS);
     }
 
     public void closeConnection() throws InterruptedException {

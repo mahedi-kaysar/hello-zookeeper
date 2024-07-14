@@ -11,9 +11,10 @@ public class ZookeeperServiceImpl implements ZookeeperService {
     private static final String parentZnode = "/parent";
     private ZookeeperClient zookeeperClient;
     private String currentChildZnode;
-
-    public ZookeeperServiceImpl(ZookeeperClient zookeeperClient) {
+    DistributedLock distributedLock;
+    public ZookeeperServiceImpl(ZookeeperClient zookeeperClient, DistributedLock distributedLock) {
         this.zookeeperClient=zookeeperClient;
+        this.distributedLock = distributedLock;
     }
 
     /**
@@ -23,9 +24,14 @@ public class ZookeeperServiceImpl implements ZookeeperService {
      */
     @Override
     public void createParentNode() throws InterruptedException, KeeperException {
-        if (zookeeperClient.getZooKeeper().exists(parentZnode, null) == null) {
-            zookeeperClient.getZooKeeper().create(parentZnode, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                    CreateMode.PERSISTENT);
+        try {
+            if (zookeeperClient.getZooKeeper().exists(parentZnode, null) == null) {
+                zookeeperClient.getZooKeeper().create(parentZnode, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE,
+                        CreateMode.PERSISTENT);
+
+            }
+        } catch (Exception exception) {
+            System.out.printf("exception on create parent node:%s, %s\n",parentZnode, exception);
         }
     }
 
@@ -52,7 +58,9 @@ public class ZookeeperServiceImpl implements ZookeeperService {
      */
     @Override
     public List<String> getChildNodes(String parentZnode) throws InterruptedException, KeeperException {
-        return zookeeperClient.getZooKeeper().getChildren(ZookeeperServiceImpl.parentZnode, false);
+        System.out.println("getChildren method is called!");
+        return zookeeperClient.getZooKeeper()
+                .getChildren(parentZnode, false);
     }
 
     /**
@@ -65,16 +73,29 @@ public class ZookeeperServiceImpl implements ZookeeperService {
      */
     @Override
     public boolean isLeader() throws InterruptedException, KeeperException {
-        int currentZnodeNumber = Integer.parseInt(currentChildZnode.substring(currentChildZnode.lastIndexOf('_') + 1));
+        int currentZnodeNumber = Integer.parseInt(currentChildZnode
+                .substring(currentChildZnode.lastIndexOf('_') + 1));
 
         // Get all children of the start znode
-        List<String> children = this.getChildNodes(parentZnode);
+        List<String> children = null;
+        distributedLock.lock();
+        try {
+            children = this.getChildNodes(parentZnode);
+        } catch (KeeperException keeperException){
+            keeperException.printStackTrace();
+        } finally {
+            distributedLock.unlock();
+        }
+        System.out.printf("childrens: %s\n", children);
+        if (children!=null) {
+            int minZnodeNumber = children.stream()
+                    .map(n -> Integer.parseInt(n.substring(2)))
+                    .min(Integer::compare)
+                    .orElse(-1);
 
-        int minZnodeNumber = children.stream()
-                .map(n -> Integer.parseInt(n.substring(2)))
-                .min(Integer::compare)
-                .orElse(-1);
-
-        return currentZnodeNumber == minZnodeNumber;
+            return currentZnodeNumber == minZnodeNumber;
+        } else {
+            return false;
+        }
     }
 }
