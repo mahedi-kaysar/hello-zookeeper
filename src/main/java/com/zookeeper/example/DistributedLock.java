@@ -25,13 +25,14 @@ public class DistributedLock {
                         ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
                 System.out.printf("lock acquired! path: %s\n", lockPath);
                 break;
-            }catch (KeeperException.NodeExistsException e) {
-                if (this.isNodeExist()) {
-                    synchronized (this) {
-                        System.out.printf("Wait, lock is already acquired, path: %s\n", lockPath);
-                        wait(5000);
-                    }
+            }catch (KeeperException e) {
+                if (e.code() != KeeperException.Code.NODEEXISTS) {
+                    System.out.printf("Exception on creating lock, path: %s\n", lockPath);
+                    throw e;
                 }
+                System.out.printf("Wait, lock is already acquired, path: %s\n", lockPath);
+                Thread.sleep(1000);
+                System.out.println("retry after 1 see..");
             }
         }
     }

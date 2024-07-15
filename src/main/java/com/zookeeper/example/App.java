@@ -46,10 +46,11 @@ public class App {
         if(args.length < 2) {
             throw  new IllegalArgumentException("Arguments are missing");
         }
+        ZookeeperClient zookeeperClient = null;
         try {
 
             // Initialise Zookeeper Client
-            ZookeeperClient zookeeperClient = new ZookeeperClient(
+            zookeeperClient = new ZookeeperClient(
                     new ZookeeperClientConfig(args[0]));
 
             // Start the Application
@@ -59,12 +60,18 @@ public class App {
 
             // This sleep is for simulating work
             Thread.sleep(Long.parseLong(args[1]));
-
-            // closing the connection
-            zookeeperClient.closeConnection();
         } catch (Exception exception){
             System.out.printf("Excception occured:%s\n", exception);
             System.exit(1);
+        } finally {
+            if (zookeeperClient!=null) {
+                try {
+                    zookeeperClient.closeConnection();
+                } catch (InterruptedException e) {
+                    System.exit(1);
+                }
+            }
+            System.exit(0);
         }
     }
 }

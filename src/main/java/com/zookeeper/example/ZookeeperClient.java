@@ -31,6 +31,8 @@ public class ZookeeperClient {
                 if (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) {
                     System.out.println("Connected");
                     connectionLatch.countDown();
+                } else if (watchedEvent.getState() == Watcher.Event.KeeperState.Disconnected) {
+                    System.out.println("Disconnected");
                 }
         });
         connectionLatch.await(5000, TimeUnit.MILLISECONDS);
