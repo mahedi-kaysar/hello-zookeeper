@@ -42,23 +42,36 @@ public class App {
             System.out.println("We are started!");
         }
     }
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         if(args.length < 2) {
             throw  new IllegalArgumentException("Arguments are missing");
         }
+        ZookeeperClient zookeeperClient = null;
+        try {
 
-        // Initialise Zookeeper Client
-        ZookeeperClient zookeeperClient = new ZookeeperClient(
-                new ZookeeperClientConfig(args[0]));
+            // Initialise Zookeeper Client
+            zookeeperClient = new ZookeeperClient(
+                    new ZookeeperClientConfig(args[0]));
 
-        // Start the Application
-        App app = new App(new ZookeeperServiceImpl(zookeeperClient));
-        app.startNodeAndPrintMessage();
+            // Start the Application
+            App app = new App(new ZookeeperServiceImpl(zookeeperClient,
+                    new DistributedLock(zookeeperClient, "/mlock")));
+            app.startNodeAndPrintMessage();
 
-        // This sleep is for simulating work
-        Thread.sleep(Long.parseLong(args[1]));
-
-        // closing the connection
-        zookeeperClient.closeConnection();
+            // This sleep is for simulating work
+            Thread.sleep(Long.parseLong(args[1]));
+        } catch (Exception exception){
+            System.out.printf("Excception occured:%s\n", exception);
+            System.exit(1);
+        } finally {
+            if (zookeeperClient!=null) {
+                try {
+                    zookeeperClient.closeConnection();
+                } catch (InterruptedException e) {
+                    System.exit(1);
+                }
+            }
+            System.exit(0);
+        }
     }
 }

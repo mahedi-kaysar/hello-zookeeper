@@ -6,6 +6,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class ZookeeperClient {
     private ZooKeeper zooKeeper;
@@ -30,9 +31,11 @@ public class ZookeeperClient {
                 if (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) {
                     System.out.println("Connected");
                     connectionLatch.countDown();
+                } else if (watchedEvent.getState() == Watcher.Event.KeeperState.Disconnected) {
+                    System.out.println("Disconnected");
                 }
         });
-        connectionLatch.await();
+        connectionLatch.await(5000, TimeUnit.MILLISECONDS);
     }
 
     public void closeConnection() throws InterruptedException {
