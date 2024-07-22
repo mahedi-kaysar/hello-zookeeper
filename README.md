@@ -58,3 +58,7 @@ Steps are:
 ![alt text](docs/output-app-logs.png)
 
 From the logs we can see only 1 node printed the expected message ("We are started!")
+
+# Documentation
+
+For more information on the `ZookeeperService` class, see the [ZookeeperService documentation](docs/ZookeeperServiceDocumentation.md).
